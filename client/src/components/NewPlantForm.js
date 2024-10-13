@@ -7,19 +7,37 @@ function NewPlantForm({ onAddPlant }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    const newPlant = {
+      name,
+      image,
+      price: parseFloat(price),
+    };
+
     fetch("/plants", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        name: name,
-        image: image,
-        price: price,
-      }),
+      body: JSON.stringify(newPlant),
     })
-      .then((r) => r.json())
-      .then((newPlant) => onAddPlant(newPlant));
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((addedPlant) => {
+        onAddPlant(addedPlant);
+        // Clear the form fields after submission
+        setName("");
+        setImage("");
+        setPrice("");
+      })
+      .catch((error) => {
+        console.error("Error adding plant:", error);
+        alert("There was an error adding the plant. Please try again.");
+      });
   }
 
   return (
@@ -46,7 +64,7 @@ function NewPlantForm({ onAddPlant }) {
           step="0.01"
           placeholder="Price"
           value={price}
-          onChange={(e) => setPrice(parseFloat(e.target.value))}
+          onChange={(e) => setPrice(e.target.value)}
         />
         <button type="submit">Add Plant</button>
       </form>
